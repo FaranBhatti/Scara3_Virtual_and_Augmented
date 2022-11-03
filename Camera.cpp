@@ -270,8 +270,8 @@ void CCamera::calibrate_board(int cam_id)
 	Size board_size = Size(5, 7);
 	int dictionary_id = aruco::DICT_6X6_250;
   
-	float size_aruco_square = 36; // MEASURE THESE, mm
-	float size_aruco_mark = 21; // MEASURE THESE, mm
+	float size_aruco_square = (36 / 1000); // MEASURE THESE, mm
+	float size_aruco_mark = (21 / 1000); // MEASURE THESE, mm
 
 	Ptr<aruco::DetectorParameters> detectorParams = aruco::DetectorParameters::create();
 	Ptr<aruco::Dictionary> dictionary = aruco::getPredefinedDictionary(aruco::PREDEFINED_DICTIONARY_NAME(dictionary_id));

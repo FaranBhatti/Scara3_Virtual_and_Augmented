@@ -96,8 +96,8 @@ std::vector<Mat> CRobot::createCoord()
 {
 	std::vector <Mat> coord;
 	
-	//virtual camera = 0.05, real camera = 72
-	float axis_length = 0.05;
+	//virtual camera = 0.05, real camera = 72, new calib = 0.036
+	float axis_length = 72;
 
 	coord.push_back((Mat1f(4, 1) << 0, 0, 0, 1)); // O
 	coord.push_back((Mat1f(4, 1) << axis_length, 0, 0, 1)); // X
@@ -232,7 +232,7 @@ void CRobot::drawBox_realcam(Mat& im, std::vector<Mat> box3d, Scalar colour)
 		Point pt1 = box2d.at(draw_box1[i]);
 		Point pt2 = box2d.at(draw_box2[i]);
 
-		line(im, pt1, pt2, colour, 1.5);
+		line(im, pt1, pt2, colour, 1);
 	}
 }
 
@@ -290,6 +290,7 @@ void CRobot::create_augmented_robot()
 
 void CRobot::draw_augmented_robot()
 {
+	
 	//update
 	update_angle();
 
@@ -311,6 +312,8 @@ void CRobot::draw_augmented_robot()
 
 	//show canvas
 	cv::imshow(CANVAS_NAME, _canvas);
+	
+	//_realcam.calibrate_board(0);
 
 }
 
@@ -672,10 +675,10 @@ void CRobot::create_scara_robot_augmented()
 	//translation vectors of all the links
 	//each link is 15cm in width, 5cm in height, 5cm in depth
 	//										x,			y,			z
-	cv::Vec3d plat_trans =	{	0,			75,	0 };
-	cv::Vec3d j0_trans =		{ 75,		-50,	0 };
+	cv::Vec3d plat_trans =	{	0,			0,	75 };
+	cv::Vec3d j0_trans =		{ 75,		0,	-50 };
 	cv::Vec3d j1_trans =		{ 0,			0,			0 };
-	cv::Vec3d j2_trans =		{ -150,		-25,	0 };
+	cv::Vec3d j2_trans =		{ -150,		0,	-25 };
 	//rotational vectors
 	//							roll, pitch, yaw
 	cv::Vec3d j0_rot = { 0,	    0,    0 };
@@ -683,7 +686,7 @@ void CRobot::create_scara_robot_augmented()
 	cv::Vec3d j2_rot = { 0,	    0,    0 };
 
 	//drawing the rigid bodies and platform
-	std::vector<Mat> platform = createBox(50, 150, 50);	//platform :: white
+	std::vector<Mat> platform = createBox(50, 50, 150);	//platform :: white
 	std::vector<Mat> rb0 = createBox(150, 50, 50);	//j0::red
 	std::vector<Mat> rb1 = createBox(150, 50, 50);	//j1::green
 	std::vector<Mat> rb2 = createBox(150, 50, 50);	//j2::blue
@@ -712,7 +715,7 @@ void CRobot::create_scara_robot_augmented()
 		//putting it into the frame
 	transformPoints(rb0, T_rb0);
 	//updating the box point
-	Mat TRB0 = createHT(Vec3d{ 0, 150, 0 }, Vec3d{ 0, float(_cam_setting_j0), 0 });
+	Mat TRB0 = createHT(Vec3d{ 0, 0, 150 }, Vec3d{ 0, 0, float(_cam_setting_j0) });
 	//creating the coordinate for rb0
 	std::vector<Mat> rb0_coord = createCoord();
 	//transforming the coordinates
@@ -726,7 +729,7 @@ void CRobot::create_scara_robot_augmented()
 		//putting it into the frame
 	transformPoints(rb1, T_rb1);
 	//updating the box point
-	Mat TRB1 = createHT(Vec3d{ 150, 0, 0 }, Vec3d{ 0, float(_cam_setting_j1), 0 });
+	Mat TRB1 = createHT(Vec3d{ 150, 0, 0 }, Vec3d{ 0, 0, float(_cam_setting_j1) });
 	//creating the coordinate for rb1
 	std::vector<Mat> rb1_coord = createCoord();
 	//transforming the coordinates
@@ -740,10 +743,10 @@ void CRobot::create_scara_robot_augmented()
 		//putting it into the frame
 	transformPoints(rb2, T_rb2_rot);
 	//updating the box points
-	Mat TRB2_rot_and_trans = createHT(Vec3d{ 175, -(float(_cam_setting_j3) / 1000), 0 }, Vec3d{ float(_cam_setting_j2), 0, 270 });
-	Mat TRB2_trans = createHT(Vec3d{ 175, -(float(_cam_setting_j3) / 1000), 0 }, Vec3d{ 0, 0, 270 });
-	Mat TRB2_rot = createHT(Vec3d{ 175, 0, 0 }, Vec3d{ float(_cam_setting_j2), 0, 270 });
-	//creating the coordinates for rb2
+	Mat TRB2_rot_and_trans = createHT(Vec3d{ 175, 0, -float(_cam_setting_j3) }, Vec3d{ float(_cam_setting_j2), 90, 0 });
+	Mat TRB2_trans = createHT(Vec3d{ 175, 0, -float(_cam_setting_j3) }, Vec3d{ 0, 90, 0 });
+	Mat TRB2_rot = createHT(Vec3d{ 175, 0, 0 }, Vec3d{ float(_cam_setting_j2), 90, 0 });
+	//creating the coordinates for rb2 
 	std::vector<Mat> rb2_trans_coord = createCoord();
 	std::vector<Mat> rb2_rot_coord = createCoord();
 	//transforming the coordinates

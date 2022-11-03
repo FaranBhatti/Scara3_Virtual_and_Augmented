@@ -14,16 +14,6 @@ using namespace dnn;
 class CRobot
 {
 public:
-	//where to place axis
-	enum axis_state
-	{
-		default = 0,
-		j0_axis = 1,
-		j1_axis = 2,
-		j2_axis = 3,
-		j3_axis = 4
-	};
-
 	CRobot();
 	~CRobot();
 
