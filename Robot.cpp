@@ -96,7 +96,7 @@ std::vector<Mat> CRobot::createCoord()
 {
 	std::vector <Mat> coord;
 	
-	//virtual camera = 0.05, real camera = 72, new calib = 0.036
+	//virtual camera = 0.072, real camera = 72
 	float axis_length = 72;
 
 	coord.push_back((Mat1f(4, 1) << 0, 0, 0, 1)); // O
