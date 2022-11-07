@@ -54,9 +54,6 @@ private:
 	cv::Vec3d rvec, tvec;
 	bool track_board;
 
-	/////////////////////////////
-	// Lab 5
-
 public:
 
 	/////////////////////////////
@@ -80,10 +77,5 @@ public:
 
 	void transform_to_image_aruco(std::vector<Mat> pts3d_mat, std::vector<Point2f>& pts2d);
 	void create_pose_aruco(Mat& image);
-	//bool detect_board_pose();
-	//bool detect_marker_pose();
-
-	/////////////////////////////
-	// Lab 5
 };
 

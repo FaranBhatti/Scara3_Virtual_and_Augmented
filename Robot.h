@@ -88,5 +88,10 @@ public:
 		//part b
 	void create_scara_robot_augmented();
 	void draw_scara_robot_augmented();
+
+	/////////////////////////////
+	// Lab 6
+	void create_robot_revkin();
+	void draw_robot_revkin();
 };
 

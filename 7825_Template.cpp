@@ -98,23 +98,19 @@ void lab5(int cam_id)
          break;
       }
    }
-   /* COMMENT BLOCK FOR RUNNING VIRTUAL CAMERA SCARA
-   //update frame size for when displaying on image vs. display, and scaling for boxes
+}
+
+void lab6(int cam_id)
+{
    char exit_key = -1;
    CRobot robot;
 
    while (exit_key != 'q')
    {
-      robot.draw_scara_robot();
+      //draw robot call
+      //robot.draw_augmented_robot();
       exit_key = waitKey(10);
    }
-   */
-   
-}
-
-void lab6(int cam_id)
-{
-  
 }
 
 void lab7(int cam_id)

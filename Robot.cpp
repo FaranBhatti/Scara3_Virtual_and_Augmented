@@ -783,3 +783,29 @@ void CRobot::draw_scara_robot_augmented()
 	//show canvas
 	cv::imshow(CANVAS_NAME, _canvas);
 }
+
+/////////////////////////////
+// Lab 6
+void CRobot::create_robot_revkin()
+{
+
+}
+
+void CRobot::draw_robot_revkin() 
+{
+	//grab image
+	_realcam.get_cam_img(_canvas);
+
+	//get pose of board
+	_realcam.create_pose_aruco(_canvas);
+
+	//draw robot
+	create_robot_revkin();
+
+	//show sliders
+	_realcam.update_settings(_canvas);
+	update_settings(_canvas);
+
+	//show canvas
+	cv::imshow(CANVAS_NAME, _canvas);
+}
