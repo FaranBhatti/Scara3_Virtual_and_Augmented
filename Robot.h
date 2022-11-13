@@ -97,8 +97,6 @@ public:
 	/////////////////////////////
 	// Lab 6
 	void revkin(int& X, int& Y, int& Z, int& theta);
-	float return_real(float& negnumber);
-	float return_imag(float& negnumber);
 	void create_robot_revkin();
 	void draw_robot_revkin();
 };

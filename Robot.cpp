@@ -818,47 +818,54 @@ void CRobot::draw_scara_robot_augmented()
 
 void CRobot::revkin(int& X, int& Y, int& Z, int& theta)
 {
-	float Xf = float(X) / 1000;
-	float Yf = float(Y) / 1000;
-	float Zf = float(Z) / 1000;
-	float thetaf = theta;
+	double Xf = float(X) / 1000;
+	double Yf = float(Y) / 1000;
+	double Zf = float(Z) / 1000;
+	double thetaf = theta;
+	double var;
+	double angle;
+	float sqrtvar;
+	float discriminant;
+
 	
-	//if (X != 0 && X != 300 && X != -300 && Y != 0 && Y != 300 && Y != -300)
+	if (X != 0 && Y != 0 && X!= -300 && X!= 300 && Y!= -300 && Y!= 300)
 	{
 		//solving for j0 joint
-			//var for simplifying eqn for j0
-			float negnumb = (-100 * pow(Xf, 4)) - (200 * pow(Xf, 2) * pow(Yf, 2)) + (9 * pow(Xf, 2)) - (100 * pow(Yf, 4)) + (9 * pow(Yf, 2));
-			float var = return_real(negnumb);
-			//float var = sqrt((-100 * pow(Xf, 4)) - (200 * pow(Xf, 2) * pow(Yf, 2)) + (9 * pow(Xf, 2)) - (100 * pow(Yf, 4)) + (9 * pow(Yf, 2)));
-			//solving for _cam_setting_j0 given the target end effector pose
-			_cam_setting_j0 = (2 * (atan((3 * Yf + var) / ((10 * pow(Xf, 2)) + (3 * Xf) + (10 * pow(Yf, 2))))) * 360 / M_PI);
-			cout << "j0 is = " << _cam_setting_j0 << endl;
-		//solving for j1 joint
-			float negnumb1 = -100 * pow(Xf, 2) - 100 * pow(Yf, 2) + 9;
-			float var1 = return_real(negnumb1);
-			_cam_setting_j1 = (-2 * (atan((var1) / (10 * sqrt(pow(Xf, 2) + pow(Yf, 2))))) * 360 / M_PI);
-			cout << "j1 is = " << _cam_setting_j1 << endl;
-		//solving for j2 joint
-	}
-	
-	
-}
+			//vars for simplifying eqn for j0
+		discriminant = (-100 * pow(Xf, 4)) - (200 * pow(Xf, 2) * pow(Yf, 2)) + (9 * pow(Xf, 2)) - (100 * pow(Yf, 4)) + (9 * pow(Yf, 2));
+			if (discriminant > 0)
+			{
+				sqrtvar = sqrt((-100 * pow(Xf, 4)) - (200 * pow(Xf, 2) * pow(Yf, 2)) + (9 * pow(Xf, 2)) - (100 * pow(Yf, 4)) + (9 * pow(Yf, 2)));
+				var = (3 * Yf + sqrtvar) / ((10 * pow(Xf, 2)) + (3 * Xf) + (10 * pow(Yf, 2)));
+				cout << "var for j0 is = " << var << endl;
+				angle = atan(var) * 180 / M_PI;
+				cout << "angle for j0 is = " << angle << endl;
+				//solving for _cam_setting_j0
+				_cam_setting_j0 = 2 * angle;
+				//troubleshooting for j0
+				//cout << "j0 is = " << _cam_setting_j0 << endl;
+			}
 
-float CRobot::return_real(float& negnumber)
-{
-	float real;
-	complex<float> number(negnumber, 0);
-	complex<float> result = sqrt(number);
-	real = result.real();
-	return real;
-}
-float CRobot::return_imag(float& negnumber)
-{
-	float real;
-	complex<float> number(negnumber, 0);
-	complex<float> result = sqrt(number);
-	real = result.imag();
-	return real;
+		//solving for j1 joint
+			//vars for simplifying eqn for j1
+			discriminant = (-100 * pow(Xf, 2)) - (100 * pow(Yf, 2)) + 9;
+			if (discriminant > 0)
+			{
+				sqrtvar = sqrt((-100 * pow(Xf, 2)) - (100 * pow(Yf, 2)) + 9);
+				var = sqrtvar / (10 * sqrt(pow(Xf, 2) + pow(Yf, 2)));
+				cout << "var for j1 is = " << var << endl;
+				angle = atan(var) * 180 / M_PI;
+				cout << "angle for j1 is = " << angle << endl;
+				//solving for _cam_setting_j1
+				_cam_setting_j1 = -2 * angle;
+				//troubleshooting for j1
+				//cout << "j1 is = " << _cam_setting_j1 << endl;
+			}
+
+		//solving for j2 joint
+
+
+	}	
 }
 
 void CRobot::create_robot_revkin()
@@ -971,7 +978,7 @@ void CRobot::draw_robot_revkin()
 	update_robot_settings(_canvas);
 
 	//print fkin results
-	fkin();
+	//fkin();
 	revkin(X, Y, Z, theta);
 
 	//show canvas (update when you do part 2 of lab on video)
