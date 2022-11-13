@@ -6,6 +6,7 @@
 #include <opencv2/aruco/charuco.hpp>
 
 #include "cvui.h"
+#define M_PI           3.14159265358979323846  /* pi */
 
 CRobot::CRobot()
 {
@@ -23,14 +24,10 @@ CRobot::CRobot()
 	//startup the webcam
 	_realcam.init_real_cam(0);
 
-	//initialize origin axis
-	//axis_location axis;
-
 	//timing
 	_time_old = getTickCount() / getTickFrequency();
-	_angle_z = 0;
 
-	//lab 5 initializations
+	//initializations for robot parameters
 	init();
 
   ///////////////////////////////////////////////
@@ -46,11 +43,21 @@ CRobot::~CRobot()
 
 void CRobot::init()
 {
+	_angle_z = 0;
+
 	_do_animate = 0;
 	_cam_setting_j0 = 0;
 	_cam_setting_j1 = 0;
 	_cam_setting_j2 = 0;
 	_cam_setting_j3 = 0;
+
+	//joint parameters
+	X = 0;
+	Y = 0;
+	Z = 0;
+	theta = 0;
+	joint_control = false;
+	_do_animate_joint = 0;
 }
 
 /////////////////////////////
@@ -97,7 +104,7 @@ std::vector<Mat> CRobot::createCoord()
 	std::vector <Mat> coord;
 	
 	//virtual camera = 0.072, real camera = 72
-	float axis_length = 72;
+	float axis_length = 0.072;
 
 	coord.push_back((Mat1f(4, 1) << 0, 0, 0, 1)); // O
 	coord.push_back((Mat1f(4, 1) << axis_length, 0, 0, 1)); // X
@@ -337,7 +344,7 @@ void CRobot::update_var_dec(int& var, int& step_size)
 	var -= step_size;
 }
 
-void CRobot::update_settings(Mat& im)
+void CRobot::update_robot_settings(Mat& im)
 {
 	Point _setting_window;
 
@@ -380,6 +387,37 @@ void CRobot::update_settings(Mat& im)
 		_do_animate = 1;
 	}
 
+	_setting_window.x -= 100;
+	_setting_window.y += 30;
+	cvui::trackbar(im, _setting_window.x, _setting_window.y, 180, &X, -300, 300);
+	cvui::text(im, _setting_window.x + 180, _setting_window.y + 20, "X");
+
+	_setting_window.y += 45;
+	cvui::trackbar(im, _setting_window.x, _setting_window.y, 180, &Y, -300, 300);
+	cvui::text(im, _setting_window.x + 180, _setting_window.y + 20, "Y");
+
+	_setting_window.y += 45;
+	cvui::trackbar(im, _setting_window.x, _setting_window.y, 180, &Z, -300, 300);
+	cvui::text(im, _setting_window.x + 180, _setting_window.y + 20, "Z");
+
+	_setting_window.y += 45;
+	cvui::trackbar(im, _setting_window.x, _setting_window.y, 180, &theta, -180, 180);
+	cvui::text(im, _setting_window.x + 180, _setting_window.y + 20, "Th");
+
+	_setting_window.y += 65;
+	if (cvui::checkbox(im, _setting_window.x, _setting_window.y, "Joint Ctrl", &joint_control))
+	{
+		//toggle for determining pose(j0, j1, j2, j3) given pose(X, Y, Z, theta)
+	}
+
+	_setting_window.x += 90;
+	_setting_window.y -= 15;
+	if (cvui::button(im, _setting_window.x, _setting_window.y, 100, 30, "Animate"))
+	{
+		init();
+		_do_animate_joint = 1;
+	}
+	
 	if (_do_animate != 0)
 	{
 		int step_size = 5;
@@ -517,15 +555,16 @@ void CRobot::update_settings(Mat& im)
 	cvui::update();
 }
 
-Mat CRobot::fkin(float q1_deg, float q2_deg, float q3_deg, float q4)
+void CRobot::fkin()
 {
 	//variables
 		//a variables distance along the x-axis
-	float a1 = 0.15;
-	float a2 = 0.15;
-	float q1 = q1_deg / 57.2958;
-	float q2 = q2_deg / 57.2958;
-	float q3 = q3_deg / 57.2958;
+	float a = 0.15;
+	float q1 = _cam_setting_j0 / 57.2958;
+	float q2 = _cam_setting_j1 / 57.2958;
+	float q3 = _cam_setting_j2 / 57.2958;
+	float q4 = _cam_setting_j3;
+	Mat fwdkin;
 	//0.225 - 0.175 - 0.075 - j2_trans[0] 
 	
 	
@@ -535,21 +574,11 @@ Mat CRobot::fkin(float q1_deg, float q2_deg, float q3_deg, float q4)
 	float phi_2 = (cos(q1) * cos(q2)) - (sin(q1) * sin(q2));
 	float phi_1 = (cos(q3) * phi_2) - (sin(q3) * phi_3);
 
-	return (Mat1f(4, 4) <<	(phi_1),												(0),			((cos(q3) * phi_3) + (sin(q3) * phi_2)),	((a2 * phi_2) + (a1 * cos(q1)) - 0.3),
-									(0),													(1),			(0),													(-q4),
-									((-cos(q3) * phi_3) - (sin(q3) * phi_2)), (0),			(phi_1),												(-(a2 * phi_3) - (a1 * sin(q1))),
-									(0),													(0),			(0),													(1));
-	
-	/*
-	float phi_1 = (cos(q1) * cos(q2)) - (sin(q1) * sin(q2));
-	float phi_2 = (cos(q1) * sin(q2)) + (cos(q2) * sin(q1));
-
-	return (Mat1f(4, 4) << (cos(q3)*phi_1), ((-cos(q1)*sin(q2)) - (cos(q2)*sin(q1))), (sin(q3)*phi_1), ((a2*phi_1) - (-q4*phi_2) + (a1*cos(q1))),
-		(cos(q3) * phi_2), (phi_1), (sin(q3) * phi_2), ((a2 * phi_2) - (-q4 * phi_1) + (a1 * sin(q1))),
-		(-sin(q3)), (0), (cos(q3)), (0),
-		(0), (0), (0), (1));
-	*/
-	
+	fwdkin =	(Mat1f(4, 4) <<	(phi_1),												(0),			((cos(q3) * phi_3) + (sin(q3) * phi_2)),	((a * phi_2) + (a * cos(q1)) - 0.3),
+										(0),													(1),			(0),													(-q4),
+										((-cos(q3) * phi_3) - (sin(q3) * phi_2)), (0),			(phi_1),												(-(a * phi_3) - (a * sin(q1))),
+										(0),													(0),			(0),													(1));
+	cout << fwdkin << endl;
 }
 
 void CRobot::create_scara_robot()
@@ -651,9 +680,6 @@ void CRobot::create_scara_robot()
 
 void CRobot::draw_scara_robot()
 {
-	//update
-
-
 	//grab image (update when you do part 2 of lab on video)
 	_canvas = cv::Mat::zeros(_image_size, CV_8UC3) + CV_RGB(60, 60, 60);
 
@@ -662,7 +688,10 @@ void CRobot::draw_scara_robot()
 
 	//show sliders
 	_virtualcam.update_settings(_canvas);
-	update_settings(_canvas);
+	update_robot_settings(_canvas);
+
+	//print fkin results
+	fkin();
 
 	//show canvas (update when you do part 2 of lab on video)
 	cv::imshow(CANVAS_NAME, _canvas);
@@ -778,7 +807,7 @@ void CRobot::draw_scara_robot_augmented()
 
 	//show sliders
 	_realcam.update_settings(_canvas);
-	update_settings(_canvas);
+	update_robot_settings(_canvas);
 
 	//show canvas
 	cv::imshow(CANVAS_NAME, _canvas);
@@ -786,26 +815,165 @@ void CRobot::draw_scara_robot_augmented()
 
 /////////////////////////////
 // Lab 6
+
+void CRobot::revkin(int& X, int& Y, int& Z, int& theta)
+{
+	float Xf = float(X) / 1000;
+	float Yf = float(Y) / 1000;
+	float Zf = float(Z) / 1000;
+	float thetaf = theta;
+	
+	//if (X != 0 && X != 300 && X != -300 && Y != 0 && Y != 300 && Y != -300)
+	{
+		//solving for j0 joint
+			//var for simplifying eqn for j0
+			float negnumb = (-100 * pow(Xf, 4)) - (200 * pow(Xf, 2) * pow(Yf, 2)) + (9 * pow(Xf, 2)) - (100 * pow(Yf, 4)) + (9 * pow(Yf, 2));
+			float var = return_real(negnumb);
+			//float var = sqrt((-100 * pow(Xf, 4)) - (200 * pow(Xf, 2) * pow(Yf, 2)) + (9 * pow(Xf, 2)) - (100 * pow(Yf, 4)) + (9 * pow(Yf, 2)));
+			//solving for _cam_setting_j0 given the target end effector pose
+			_cam_setting_j0 = (2 * (atan((3 * Yf + var) / ((10 * pow(Xf, 2)) + (3 * Xf) + (10 * pow(Yf, 2))))) * 360 / M_PI);
+			cout << "j0 is = " << _cam_setting_j0 << endl;
+		//solving for j1 joint
+			float negnumb1 = -100 * pow(Xf, 2) - 100 * pow(Yf, 2) + 9;
+			float var1 = return_real(negnumb1);
+			_cam_setting_j1 = (-2 * (atan((var1) / (10 * sqrt(pow(Xf, 2) + pow(Yf, 2))))) * 360 / M_PI);
+			cout << "j1 is = " << _cam_setting_j1 << endl;
+		//solving for j2 joint
+	}
+	
+	
+}
+
+float CRobot::return_real(float& negnumber)
+{
+	float real;
+	complex<float> number(negnumber, 0);
+	complex<float> result = sqrt(number);
+	real = result.real();
+	return real;
+}
+float CRobot::return_imag(float& negnumber)
+{
+	float real;
+	complex<float> number(negnumber, 0);
+	complex<float> result = sqrt(number);
+	real = result.imag();
+	return real;
+}
+
 void CRobot::create_robot_revkin()
 {
+	//when you draw on to your video scale everything by 1000
 
+	//translation vectors of all the links
+	//each link is 15cm in width, 5cm in height, 5cm in depth
+	//										x,			y,			z
+	cv::Vec3d plat_trans = { 0,			0.075,	0 };
+	cv::Vec3d j0_trans = { 0.075,		-0.05,	0 };
+	cv::Vec3d j1_trans = { 0,			0,			0 };
+	cv::Vec3d j2_trans = { -0.15,		-0.025,	0 };
+	//rotational vectors
+	//							roll, pitch, yaw
+	cv::Vec3d j0_rot = { 0,	    0,    0 };
+	cv::Vec3d j1_rot = { 0,	    0,    0 };
+	cv::Vec3d j2_rot = { 0,	    0,    0 };
+
+	//drawing the rigid bodies and platform
+	std::vector<Mat> platform = createBox(0.05, 0.15, 0.05);	//platform :: white
+	std::vector<Mat> rb0 = createBox(0.15, 0.05, 0.05);	//j0::red
+	std::vector<Mat> rb1 = createBox(0.15, 0.05, 0.05);	//j1::green
+	std::vector<Mat> rb2 = createBox(0.15, 0.05, 0.05);	//j2::blue
+
+	//transformation matrices for placing the boxes
+	Mat plat = createHT(plat_trans, 0);
+	Mat T_rb0 = plat * createHT(j0_trans, j0_rot);
+	Mat T_rb1 = T_rb0 * createHT(j1_trans, j1_rot);
+	Mat T_rb2_rot = T_rb1 * createHT(j2_trans, j2_rot);
+
+	//platform
+		//putting it into the frame
+	transformPoints(platform, plat);
+	//updating the box point
+	Mat PLAT0 = createHT(Vec3d{ 0, 0, 0 }, Vec3d{ 0, 0, 0 });
+	//creating the coordinate for platform
+	std::vector<Mat> plat_coord = createCoord();
+	//transforming the coordinates
+	transformPoints(plat_coord, PLAT0);
+	//drawing the coordinates 
+	drawCoord(_canvas, plat_coord);
+	//drawing the box
+	transformPoints(platform, PLAT0);
+
+	//1st rigid body
+		//putting it into the frame
+	transformPoints(rb0, T_rb0);
+	//updating the box point
+	Mat TRB0 = createHT(Vec3d{ 0, 0.15, 0 }, Vec3d{ 0, float(_cam_setting_j0), 0 });
+	//creating the coordinate for rb0
+	std::vector<Mat> rb0_coord = createCoord();
+	//transforming the coordinates
+	transformPoints(rb0_coord, TRB0);
+	//drawing the coordinates
+	drawCoord(_canvas, rb0_coord);
+	//drawing the box
+	transformPoints(rb0, TRB0);
+
+	//2nd rigid body
+		//putting it into the frame
+	transformPoints(rb1, T_rb1);
+	//updating the box point
+	Mat TRB1 = createHT(Vec3d{ 0.15, 0, 0 }, Vec3d{ 0, float(_cam_setting_j1), 0 });
+	//creating the coordinate for rb1
+	std::vector<Mat> rb1_coord = createCoord();
+	//transforming the coordinates
+	transformPoints(rb1_coord, TRB0 * TRB1);
+	//drawing the coordinates
+	drawCoord(_canvas, rb1_coord);
+	//drawing the box
+	transformPoints(rb1, TRB0 * TRB1);
+
+	//3rd rigid body
+		//putting it into the frame
+	transformPoints(rb2, T_rb2_rot);
+	//updating the box points
+	Mat TRB2_rot_and_trans = createHT(Vec3d{ 0.175, -(float(_cam_setting_j3) / 1000), 0 }, Vec3d{ float(_cam_setting_j2), 0, 270 });
+	Mat TRB2_trans = createHT(Vec3d{ 0.175, -(float(_cam_setting_j3) / 1000), 0 }, Vec3d{ 0, 0, 270 });
+	Mat TRB2_rot = createHT(Vec3d{ 0.175, 0, 0 }, Vec3d{ float(_cam_setting_j2), 0, 270 });
+	//creating the coordinates for rb2
+	std::vector<Mat> rb2_trans_coord = createCoord();
+	std::vector<Mat> rb2_rot_coord = createCoord();
+	//transforming the coordinates
+	transformPoints(rb2_trans_coord, TRB0 * TRB1 * TRB2_trans);
+	transformPoints(rb2_rot_coord, TRB0 * TRB1 * TRB2_rot);
+	//drawing the coordinates
+	drawCoord(_canvas, rb2_trans_coord);
+	drawCoord(_canvas, rb2_rot_coord);
+	//drawing the box
+	transformPoints(rb2, TRB0 * TRB1 * TRB2_rot_and_trans);
+
+	//drawing the rigid bodies
+	drawBox(_canvas, rb0, CV_RGB(255, 0, 0));
+	drawBox(_canvas, rb1, CV_RGB(0, 255, 0));
+	drawBox(_canvas, rb2, CV_RGB(0, 0, 255));
+	drawBox(_canvas, platform, CV_RGB(255, 255, 255));
 }
 
 void CRobot::draw_robot_revkin() 
 {
-	//grab image
-	_realcam.get_cam_img(_canvas);
-
-	//get pose of board
-	_realcam.create_pose_aruco(_canvas);
+	//grab image (update when you do part 2 of lab on video)
+	_canvas = cv::Mat::zeros(_image_size, CV_8UC3) + CV_RGB(60, 60, 60);
 
 	//draw robot
 	create_robot_revkin();
 
 	//show sliders
-	_realcam.update_settings(_canvas);
-	update_settings(_canvas);
+	_virtualcam.update_settings(_canvas);
+	update_robot_settings(_canvas);
 
-	//show canvas
+	//print fkin results
+	fkin();
+	revkin(X, Y, Z, theta);
+
+	//show canvas (update when you do part 2 of lab on video)
 	cv::imshow(CANVAS_NAME, _canvas);
 }

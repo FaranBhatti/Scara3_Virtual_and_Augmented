@@ -20,7 +20,6 @@ public:
 private:
 	Size _image_size;
 	Mat _canvas;
-	float X, Y, Z;
 	int webcam = 0;
 	float _time, _time_old, _time_change, _angle_z;
 
@@ -30,6 +29,11 @@ private:
 	int _cam_setting_j2;
 	int _cam_setting_j3;
 	int _do_animate;
+
+	// robot reverse kin variables
+	int X, Y, Z, theta;
+	bool joint_control;
+	int _do_animate_joint;
 
 	/////////////////////////////
 	// Lab 3
@@ -80,8 +84,7 @@ public:
 	void update_var_inc(int& var, int& step_size);
 	void update_var_dec(int& var, int& step_size);
 	void init();
-	void update_settings(Mat& im);
-	Mat fkin(float q1_deg, float q2_deg, float q3_deg, float q4);
+	void update_robot_settings(Mat& im);
 		//part a
 	void create_scara_robot();
 	void draw_scara_robot();
@@ -89,8 +92,13 @@ public:
 	void create_scara_robot_augmented();
 	void draw_scara_robot_augmented();
 
+	void fkin();
+
 	/////////////////////////////
 	// Lab 6
+	void revkin(int& X, int& Y, int& Z, int& theta);
+	float return_real(float& negnumber);
+	float return_imag(float& negnumber);
 	void create_robot_revkin();
 	void draw_robot_revkin();
 };

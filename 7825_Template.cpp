@@ -64,8 +64,8 @@ void lab5(int cam_id)
    int select = -1;
    while (select != 0)
    {
-      cout << "\n(1) Lab 5a - Forward Kinematics Virtual";
-      cout << "\n(2) Lab 5b - Forward Kinematics Real";
+      cout << "\n(1) Lab 5A - Forward Kinematics Virtual";
+      cout << "\n(2) Lab 5B - Forward Kinematics Real";
       cout << "\n(0) Exit\n";
       cin >> select;
       switch (select)
@@ -102,14 +102,42 @@ void lab5(int cam_id)
 
 void lab6(int cam_id)
 {
-   char exit_key = -1;
-   CRobot robot;
-
-   while (exit_key != 'q')
+   int select = -1;
+   while (select != 0)
    {
-      //draw robot call
-      //robot.draw_augmented_robot();
-      exit_key = waitKey(10);
+      cout << "\n(1) Lab 6A - Reverse Kinematics Virtual";
+      cout << "\n(2) Lab 6B - Reverse Kinematics Real";
+      cout << "\n(0) Exit\n";
+      cin >> select;
+      switch (select)
+      {
+      case 1:
+      {
+         //Scara robot on virtual camera
+         char exit_key = -1;
+         CRobot robot;
+
+         while (exit_key != 'q')
+         {
+            robot.draw_robot_revkin();
+            exit_key = waitKey(10);
+         }
+      }
+      break;
+      case 2:
+      {
+         //Scara robot on real camera
+         char exit_key = -1;
+         CRobot robot;
+
+         while (exit_key != 'q')
+         {
+            //robot.();
+            exit_key = waitKey(10);
+         }
+      }
+      break;
+      }
    }
 }
 
