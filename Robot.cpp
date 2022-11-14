@@ -397,7 +397,7 @@ void CRobot::update_robot_settings(Mat& im)
 	cvui::text(im, _setting_window.x + 180, _setting_window.y + 20, "Y");
 
 	_setting_window.y += 45;
-	cvui::trackbar(im, _setting_window.x, _setting_window.y, 180, &Z, -300, 300);
+	cvui::trackbar(im, _setting_window.x, _setting_window.y, 180, &Z, 0, 150);
 	cvui::text(im, _setting_window.x + 180, _setting_window.y + 20, "Z");
 
 	_setting_window.y += 45;
@@ -424,7 +424,7 @@ void CRobot::update_robot_settings(Mat& im)
 		if (_do_animate == 1)
 		{
 			// state 1
-			if (1)	{
+			if (1) {
 				//going fwd 180 deg for j0
 				update_var_inc(_cam_setting_j0, step_size);
 
@@ -433,8 +433,8 @@ void CRobot::update_robot_settings(Mat& im)
 		}
 		else if (_do_animate == 2) {
 			// state 2
-			if (1) 
-			{ 
+			if (1)
+			{
 				//going back 0 deg for j0
 				update_var_dec(_cam_setting_j0, step_size);
 				if (_cam_setting_j0 == 0) { _do_animate = 3; }
@@ -531,25 +531,71 @@ void CRobot::update_robot_settings(Mat& im)
 			}
 		}
 		else if (_do_animate == 13) {
-		// state 13
-		if (1)
-		{
-			//going down 150mm for j3
-			update_var_inc(_cam_setting_j3, step_size);
-			if (_cam_setting_j3 == 150) { _do_animate = 14; }
-		}
+			// state 13
+			if (1)
+			{
+				//going down 150mm for j3
+				update_var_inc(_cam_setting_j3, step_size);
+				if (_cam_setting_j3 == 150) { _do_animate = 14; }
+			}
 		}
 		else if (_do_animate == 14) {
 			// state 14
 			if (1) {
 				update_var_dec(_cam_setting_j3, step_size);
-				if (_cam_setting_j3 == 0) 
+				if (_cam_setting_j3 == 0)
 				{
 					_do_animate = 0;
 					init();
 				}
 			}
 		}
+	}
+
+	if (_do_animate_joint != 0) 
+	{
+		int step_size = 5;
+		joint_control = true;
+		if (_do_animate_joint == 1)
+		{
+			// state 1
+			if (1) {
+				//going fwd to 180 for X and Y
+				update_var_inc(X, step_size);
+				update_var_inc(Y, step_size);
+				if (Y == 210) { _do_animate_joint = 2; }
+			}
+		}
+		else if (_do_animate_joint == 2) {
+			// state 2
+			if (1)
+			{
+				//going back to -210 for X and Y
+				update_var_dec(X, step_size);
+				update_var_dec(Y, step_size);
+				if (Y == -210) { _do_animate_joint = 3; }
+			}
+		}
+		else if (_do_animate_joint == 3) {
+			// state 3
+			if (1)
+			{
+				//going back to 210 for X and Y
+				update_var_inc(X, step_size);
+				update_var_inc(Y, step_size);
+				if (Y == 210) { _do_animate_joint = 4; }
+			}
+		}
+		else if (_do_animate_joint == 4) {
+			// state 3 :: END STATE MACHINE
+			if (1) {
+				if (Y == 0)
+				{
+					_do_animate_joint = 0;
+				}
+			}
+		}
+
 	}
 
 	cvui::update();
@@ -820,15 +866,13 @@ void CRobot::revkin(int& X, int& Y, int& Z, int& theta)
 {
 	double Xf = float(X) / 1000;
 	double Yf = float(Y) / 1000;
-	double Zf = float(Z) / 1000;
 	double thetaf = theta;
 	double var;
 	double angle;
 	float sqrtvar;
 	float discriminant;
-
 	
-	if (X != 0 && Y != 0 && X!= -300 && X!= 300 && Y!= -300 && Y!= 300)
+	if ((X != 0 || Y != 0) && X != -300 && X != 300 && Y != -300 && Y != 300)
 	{
 		//solving for j0 joint
 			//vars for simplifying eqn for j0
@@ -861,11 +905,11 @@ void CRobot::revkin(int& X, int& Y, int& Z, int& theta)
 				//troubleshooting for j1
 				//cout << "j1 is = " << _cam_setting_j1 << endl;
 			}
+			//add the joint angle to the joint angles
+	}
+	//solving for j3 joint
+	_cam_setting_j3 = Z;
 
-		//solving for j2 joint
-
-
-	}	
 }
 
 void CRobot::create_robot_revkin()
@@ -979,8 +1023,10 @@ void CRobot::draw_robot_revkin()
 
 	//print fkin results
 	//fkin();
-	revkin(X, Y, Z, theta);
-
+	if (joint_control == true)
+	{
+		revkin(X, Y, Z, theta);
+	}
 	//show canvas (update when you do part 2 of lab on video)
 	cv::imshow(CANVAS_NAME, _canvas);
 }
