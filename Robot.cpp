@@ -905,10 +905,12 @@ void CRobot::revkin(int& X, int& Y, int& Z, int& theta)
 				//troubleshooting for j1
 				//cout << "j1 is = " << _cam_setting_j1 << endl;
 			}
-			//add the joint angle to the joint angles
 	}
 	//solving for j3 joint
 	_cam_setting_j3 = Z;
+
+	//solving for the angle given the joints and theta
+	_cam_setting_j2 = _cam_setting_j0 + _cam_setting_j1 - theta;
 
 }
 
