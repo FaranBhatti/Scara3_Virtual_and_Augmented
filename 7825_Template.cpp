@@ -1,9 +1,9 @@
 ////////////////////////////////////////////////////////////////
-// ELEX 7825 Template project for BCIT
-// Created Sept. 9, 2020 by Craig Hennessey
-// Edited Oct. 23rd, 2022 by Faran Bhatti
-// Last updated October 23rd, 2022
+// Robotics Project, 7825_Template.cpp
+// Created Sept 10th, 2022 by Faran Bhatti
+// Last edited Nov 20th, 2022
 ////////////////////////////////////////////////////////////////
+
 #include "stdafx.h"
 
 using namespace std;
@@ -132,7 +132,7 @@ void lab6(int cam_id)
 
          while (exit_key != 'q')
          {
-            //robot.();
+            robot.draw_scara_robot_revkin_augmented();
             exit_key = waitKey(10);
          }
       }
