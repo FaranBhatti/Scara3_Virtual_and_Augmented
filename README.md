@@ -48,6 +48,3 @@ This Robotics project simulates and visualizes robot tasks in different lab sess
 1. Install OpenCV and required dependencies.
 2. Clone the project repository.
 3. Compile the project using a compatible C++ compiler.
-
-```bash
-g++ -o robot 7825_Template.cpp `pkg-config --cflags --libs opencv`
