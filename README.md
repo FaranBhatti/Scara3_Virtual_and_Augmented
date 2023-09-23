@@ -29,31 +29,13 @@ This Robotics project simulates and visualizes robot tasks in different lab sess
 
 ## Files
 
-## Files
-
-- **.gitattributes & .gitignore**: Git configuration and ignore rules.
-- **7825_Template**: Files related to the 7825 template.
-  - `7825_Template.cpp`
-  - `7825_Template.sln`
-  - `7825_Template.vcxproj`
-  - `7825_Template.vcxproj.user`
 - **Camera**:
   - `Camera.cpp`: Defines a CCamera class that manages both virtual and real camera operations. Utilizing the OpenCV library, it provides functionality for initializing camera parameters, transforming 3D points to 2D image space, calibrating cameras, and interfacing with real webcams. Additionally, it offers tools for working with ChArUco boards—a type of fiducial marker used in computer vision.
   - `Camera.h`: Header for Camera.cpp.
 - **README.md**: This document.
 - **Robot**:
-  - `Robot.cpp`: [Description about what Robot.cpp does]
+  - `Robot.cpp`: Represents the Scara-3 Robot's functionalities in terms of kinematics, camera interactions, and graphical representations in both virtual and real environments.
   - `Robot.h`: Header for Robot.cpp.
-- **Serial**:
-  - `Serial.cpp`: [Description about what Serial.cpp does]
-  - `Serial.h`: Header for Serial.cpp.
-- `cvui.h`: [Short description about cvui.h]
-- **stdafx**:
-  - `stdafx.cpp`
-  - `stdafx.h`
-- **uArm**:
-  - `uArm.cpp`: [Description about what uArm.cpp does]
-  - `uArm.h`: Header for uArm.cpp.
 
 ## Dependencies
 
