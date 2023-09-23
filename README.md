@@ -1,4 +1,4 @@
-# Robotics Project - 7825_Template.cpp
+# Robotics Project
 
 ## Overview
 
