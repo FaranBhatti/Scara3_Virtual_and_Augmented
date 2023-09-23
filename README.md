@@ -38,7 +38,7 @@ This Robotics project simulates and visualizes robot tasks in different lab sess
   - `7825_Template.vcxproj`
   - `7825_Template.vcxproj.user`
 - **Camera**:
-  - `Camera.cpp`: The "camera.h" file defines a CCamera class that manages both virtual and real camera operations. Utilizing the OpenCV library, it provides functionality for initializing camera parameters, transforming 3D points to 2D image space, calibrating cameras, and interfacing with real webcams. Additionally, it offers tools for working with ChArUco boards—a type of fiducial marker used in computer vision.
+  - `Camera.cpp`: Defines a CCamera class that manages both virtual and real camera operations. Utilizing the OpenCV library, it provides functionality for initializing camera parameters, transforming 3D points to 2D image space, calibrating cameras, and interfacing with real webcams. Additionally, it offers tools for working with ChArUco boards—a type of fiducial marker used in computer vision.
   - `Camera.h`: Header for Camera.cpp.
 - **README.md**: This document.
 - **Robot**:
